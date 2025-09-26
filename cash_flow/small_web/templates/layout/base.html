@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Движение</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Товары</h1>
+    </header>
+    <nav>
+        <a href="{% url 'index_page' %}">Главная</a>
+        <a href="#">Личный кабинет</a>
+        <a href="#">Вход в систему</a>
+        <a href="#">Регистрация</a>
+    </nav>
+    <section>
+        {% block content %}
+        {% endblock content %}
+    </section>
+</body>
+</html>
