@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 
 from small_web.models import CustomUsers
 from small_web.utils.utils_validate import (
@@ -12,7 +11,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         style={"input_type": "password", "placeholder": "Введите пароль"},
         error_messages={"blank": "Поле Пароль не может быть пустым"},
-        label="Пароль"
+        label="Пароль",
     )
     password2 = serializers.CharField(
         style={"input_type": "password", "placeholder": "Повторите пароль"},
@@ -49,14 +48,32 @@ class SignUpSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data) -> CustomUsers:
-        validated_data["password"] = make_password(validated_data["password"])
-        user = CustomUsers.objects.create_user(
+        user = CustomUsers(
             username=validated_data["username"],
             password=validated_data["password"],
             email=validated_data["email"]
         )
+        user.set_password(raw_password=validated_data["password"])
+        user.save()
         return user
 
     class Meta:
         model = CustomUsers
         fields = ("username", "email", "password", "password2")
+
+
+class SignInSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        style={"placeholder": "Введите логин"},
+        error_messages={"blank": "Поле Логин не может быть пустым"},
+        label="Логин",
+    )
+    password = serializers.CharField(
+        style={"input_type": "password", "placeholder": "Введите пароль"},
+        error_messages={"blank": "Поле Пароль не может быть пустым"},
+        label="Пароль"
+    )
+
+    class Meta:
+        model = CustomUsers
+        fields = ("username", "password")
