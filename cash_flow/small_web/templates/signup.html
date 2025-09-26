@@ -1,0 +1,14 @@
+{% extends 'layout/base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+<h1>Регистрация</h1>
+<form method="post">
+  {% csrf_token %}
+  {% render_field serializer.username style=style %}
+  {% render_field serializer.email style=style %}
+  {% render_field serializer.password style=style %}
+  {% render_field serializer.password2 style=style %}
+  <input type="submit" value="Регистрация">
+</form>
+{% endblock content %}

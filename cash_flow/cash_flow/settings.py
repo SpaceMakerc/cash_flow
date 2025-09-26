@@ -136,3 +136,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = False
+
+AUTH_USER_MODEL = 'small_web.CustomUsers'
