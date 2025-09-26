@@ -1,0 +1,39 @@
+{% extends 'layout/base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+
+<h3>Для изменения или удаления записи - выберите </h3>
+<nav>
+    <a href="#">Добавить данные по ДДС</a>
+    <a href="#">Управление справочниками</a>
+</nav>
+<table>
+    <caption>Информация по вашим движениям денежных средств</caption>
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in serializer.data %}
+        <tr>
+            <td>{{data.created_at}}</td>
+            <td>{{data.status}}</td>
+            <td>{{data.type}}</td>
+            <td>{{data.category}}</td>
+            <td>{{data.subcategory}}</td>
+            <td>{{data.sum}}</td>
+            <td>{{data.comment}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock content %}

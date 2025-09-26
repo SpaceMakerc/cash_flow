@@ -12,7 +12,7 @@
     </header>
     <nav>
         <a href="{% url 'index_page' %}">Главная</a>
-        <a href="#">Личный кабинет</a>
+        <a href="{% url 'cash_info_page' %}">Личный кабинет</a>
         <a href="{% url 'signin_page' %}">Вход в систему</a>
         <a href="{% url 'signup_page' %}">Регистрация</a>
         {% if user.is_authenticated %}

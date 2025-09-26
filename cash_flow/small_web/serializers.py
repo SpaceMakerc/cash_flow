@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from small_web.models import CustomUsers
+from small_web.models import CustomUsers, CashData
 from small_web.utils.utils_validate import (
     username_validation_on_creating,
     email_validation_on_creating,
@@ -77,3 +77,13 @@ class SignInSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUsers
         fields = ("username", "password")
+
+
+class GetCashDataSerializer(serializers.Serializer):
+    created_at = serializers.DateField()
+    status = serializers.CharField()
+    type = serializers.CharField()
+    category = serializers.CharField()
+    subcategory = serializers.CharField()
+    sum = serializers.FloatField()
+    comment = serializers.CharField()
