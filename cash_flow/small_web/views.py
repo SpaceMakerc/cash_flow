@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.shortcuts import redirect, reverse
 
@@ -72,3 +72,12 @@ class SignInAPI(APIView):
                 "not_found": True
             })
         return Response({"serializer": serializer, "style": self.style})
+
+
+class LogOutAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        logout(request=request)
+        return redirect(to=reverse("index_page"))
+
