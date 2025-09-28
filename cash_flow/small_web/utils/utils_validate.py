@@ -1,6 +1,3 @@
-from datetime import datetime
-from typing import Union
-
 from small_web.models import CustomUsers
 
 
