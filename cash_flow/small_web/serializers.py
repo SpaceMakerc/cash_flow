@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from small_web.models import CustomUsers, CashData
+from small_web.models import CustomUsers, CashData, Statuses
 from small_web.utils.utils_validate import (
     username_validation_on_creating,
     email_validation_on_creating,
@@ -124,3 +124,16 @@ class ChooseCashDataSerializer(serializers.ModelSerializer):
             "status", "type", "category", "subcategory",
             "sum", "comment", "created_at_start", "created_at_end"
         )
+
+
+class StatusSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(
+        allow_null=False, required=True,
+        error_messages={"blank": "Поле Наименование не может быть пустым"},
+        label="Наименование"
+    )
+
+    class Meta:
+        model = Statuses
+        fields = ("id", "name", "user")

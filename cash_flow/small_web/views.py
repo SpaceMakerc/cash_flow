@@ -16,7 +16,8 @@ from small_web.serializers import (
     SignUpSerializer,
     SignInSerializer,
     ShowCashDataSerializer,
-    ChooseCashDataSerializer
+    ChooseCashDataSerializer,
+    StatusSerializer,
 )
 from small_web.models import (
     CashData,
@@ -145,11 +146,13 @@ class CashDataAPI(APIView):
                     end_date=user_data.get("created_at_end", None)
                 )
                 db_info = CashData.objects.filter(
-                    Q(status=user_data.get("status", None)) |
-                    Q(type=user_data.get("type", None)) |
-                    Q(category=user_data.get("category", None)) |
-                    Q(subcategory=user_data.get("subcategory", None))
-                    | date_range if date_range else ~Q(created_at_start=None)
+                    Q(user=user_id) & Q(
+                        Q(status=user_data.get("status")) |
+                        Q(type=user_data.get("type")) |
+                        Q(category=user_data.get("category")) |
+                        Q(subcategory=user_data.get("subcategory")) |
+                        date_range
+                    )
                 )
             common_filter = Q(user=request.user) | Q(user=1)
             context = {}
@@ -182,7 +185,7 @@ def add_cash_flow(request):
     if request.method == "GET":
         form = AddCashFlowForm(user=request.user)
         context = {"form": form}
-        return render(request, "change_data/add_cashflow.html", context)
+        return render(request, "change_cash_flow_data/add_cashflow.html", context)
     user_data = request.POST
     form = AddCashFlowForm(user_data, user=request.user)
     if form.is_valid():
@@ -199,7 +202,7 @@ def add_cash_flow(request):
         ).save()
         return redirect(to=reverse("cash_info_page"))
     context = {"form": form}
-    return render(request, "change_data/add_cashflow.html", context)
+    return render(request, "change_cash_flow_data/add_cashflow.html", context)
 
 
 def categories(request):
@@ -214,7 +217,7 @@ def subcategories(request):
 
 class CashFlowDetailAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = "change_data/detail_cashflow.html"
+    template_name = "change_cash_flow_data/detail_cashflow.html"
     permission_classes = [IsAuthenticated]
     style = {'template_pack': 'rest_framework/horizontal/'}
 
@@ -238,13 +241,15 @@ class CashFlowDeleteAPI(APIView):
             )
 
 
+@login_required
 def change_cash_flow(request, pk):
     if request.method == "GET":
         cash_flow_row = get_object_or_404(CashData, pk=pk)
         user_data = model_to_dict(cash_flow_row)
         form = AddCashFlowForm(user_data, user=request.user)
         return render(
-            request, "change_data/change_cashflow.html", {"form": form}
+            request, "change_cash_flow_data/change_cashflow.html",
+            {"form": form}
         )
     user_data = request.POST
     form = AddCashFlowForm(user_data, user=request.user)
@@ -264,4 +269,81 @@ def change_cash_flow(request, pk):
         ).save()
         return redirect(to=reverse("cash_info_page"))
     context = {"form": form}
-    return render(request, "change_data/change_cashflow.html", context)
+    return render(
+        request, "change_cash_flow_data/change_cashflow.html", context
+    )
+
+
+class StatusesByUserAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "statuses_data.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        user_id = request.user
+        common_filter = Q(user=user_id) | Q(user=1)
+        db_info = Statuses.objects.filter(common_filter)
+        serializer = StatusSerializer(db_info, many=True)
+        context = {"serializer": serializer, "style": self.style}
+        return Response(context)
+
+
+class AddStatusAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_statuses_data/add_status.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        serializer = StatusSerializer()
+        return Response({"serializer": serializer, "style": self.style})
+
+    def post(self, request):
+        user_data = {
+            "user": request.user.id, "name": request.POST.get("name", None)
+        }
+
+        serializer = StatusSerializer(data=user_data)
+        if serializer.is_valid():
+            serializer.save()
+            return redirect(to=reverse("statuses_info_page"))
+        return Response({"serializer": serializer, "style": self.style})
+
+
+class ChangeStatusAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_statuses_data/change_status.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request, pk):
+        status_row = get_object_or_404(Statuses, pk=pk)
+        serializer = StatusSerializer(status_row)
+        return Response({"serializer": serializer, "style": self.style})
+
+    def post(self, request, pk):
+        user_data = {
+            "user": request.user.id, "name": request.POST.get("name", None)
+        }
+        serializer = StatusSerializer(data=user_data)
+        if serializer.is_valid():
+            Statuses(
+                id=pk,
+                user=serializer.validated_data.get("user"),
+                name=serializer.validated_data.get("name")
+            ).save()
+            return redirect(to=reverse("statuses_info_page"))
+        return Response({"serializer": serializer, "style": self.style})
+
+
+class DeleteStatusAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            status_row = get_object_or_404(Statuses, pk=pk)
+            Statuses.delete(status_row)
+            return redirect(to=reverse("statuses_info_page"))
+        except Exception:
+            return redirect(to=reverse("statuses_info_page"))

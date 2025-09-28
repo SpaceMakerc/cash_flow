@@ -22,5 +22,18 @@ urlpatterns = [
     path(
         "change_cash_flow/<int:pk>/", views.change_cash_flow,
         name="change_cash_flow_page"
+    ),
+    path(
+        "statuses_info/", views.StatusesByUserAPI.as_view(),
+        name="statuses_info_page"
+    ),
+    path("add_status/", views.AddStatusAPI.as_view(), name="add_status_page"),
+    path(
+        "change_status/<int:pk>", views.ChangeStatusAPI.as_view(),
+        name="change_status_page"
+    ),
+    path(
+        "delete_status/<int:pk>", views.DeleteStatusAPI.as_view(),
+        name="delete_status_page"
     )
 ]

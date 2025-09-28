@@ -11,4 +11,4 @@ def create_date_period(start_date: str = None, end_date: str = None):
     if end_date:
         result = Q(created_at__lt=end_date)
         return result
-    return False
+    return Q(created_at=None)
