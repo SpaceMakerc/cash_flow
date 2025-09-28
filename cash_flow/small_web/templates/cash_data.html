@@ -57,7 +57,7 @@
     <tbody>
         {% for data in serializer_show.data %}
         <tr>
-            <td>{{forloop.counter}}</td>
+            <td><a href="{% url 'cash_flow_detail_page' data.id %}">{{forloop.counter}}</a></td>
             <td>{{data.created_at}}</td>
             <td>{{data.status}}</td>
             <td>{{data.type}}</td>

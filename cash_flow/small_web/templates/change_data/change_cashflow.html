@@ -1,0 +1,55 @@
+{% extends 'layout/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<h4>Изменить данные</h4>
+
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        {{ form.created_at.label_tag }}
+        {% render_field form.created_at %}
+        {{ form.created_at.errors|first }}
+    </div>
+
+    <div>
+        {{ form.status.label_tag }}
+        {% render_field form.status %}
+        {{ form.status.errors|first }}
+    </div>
+
+    <div>
+        {{ form.type.label_tag }}
+        {% render_field form.type hx-get="/category/" hx-target="#id_category" %}
+        {{ form.type.errors|first }}
+    </div>
+
+    <div>
+        {{ form.category.label_tag }}
+        {% render_field form.category hx-get="/subcategory/" hx-target="#id_subcategory"%}
+        {{ form.category.errors|first }}
+    </div>
+
+    <div>
+        {{ form.subcategory.label_tag }}
+        {% render_field form.subcategory %}
+        {{ form.subcategory.errors|first }}
+    </div>
+
+    <div>
+        {{ form.sum.label_tag }}
+        {% render_field form.sum %}
+        {{ form.sum.errors|first }}
+    </div>
+
+    <div>
+        {{ form.comment.label_tag }}
+        {% render_field form.comment %}
+        {{ form.comment.errors|first }}
+    </div>
+    <input type="submit" value="Изменить">
+</form>
+
+
+{% endblock content %}

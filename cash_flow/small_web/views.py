@@ -4,10 +4,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.shortcuts import redirect, reverse, render
+from django.shortcuts import redirect, reverse, render, get_object_or_404
 from django.db.models import Q
 from django.http.response import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.forms.models import model_to_dict
 
+from datetime import datetime
 
 from small_web.serializers import (
     SignUpSerializer,
@@ -174,6 +177,7 @@ class CashDataAPI(APIView):
             })
 
 
+@login_required
 def add_cash_flow(request):
     if request.method == "GET":
         form = AddCashFlowForm(user=request.user)
@@ -183,7 +187,6 @@ def add_cash_flow(request):
     form = AddCashFlowForm(user_data, user=request.user)
     if form.is_valid():
         cd = form.cleaned_data
-        print(cd, "CD")
         CashData(
             created_at=cd.get("created_at", None),
             status=cd.get("status", None),
@@ -192,7 +195,7 @@ def add_cash_flow(request):
             subcategory=cd.get("subcategory", None),
             sum=cd.get("sum", None),
             user=request.user,
-            comment=cd.get("status", None)
+            comment=cd.get("comment", None)
         ).save()
         return redirect(to=reverse("cash_info_page"))
     context = {"form": form}
@@ -207,3 +210,58 @@ def categories(request):
 def subcategories(request):
     form = AddCashFlowForm(request.GET, user=request.user)
     return HttpResponse(form["subcategory"])
+
+
+class CashFlowDetailAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_data/detail_cashflow.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request, pk):
+        cash_flow = CashData.objects.get(pk=pk)
+        serializer = ShowCashDataSerializer(cash_flow)
+        return Response({"serializer": serializer})
+
+
+class CashFlowDeleteAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            cash_flow_row = get_object_or_404(CashData, pk=pk)
+            CashData.delete(cash_flow_row)
+            return redirect(to=reverse("cash_info_page"))
+        except Exception:
+            return redirect(
+                to=reverse("cash_flow_detail_page", kwargs={"pk": pk})
+            )
+
+
+def change_cash_flow(request, pk):
+    if request.method == "GET":
+        cash_flow_row = get_object_or_404(CashData, pk=pk)
+        user_data = model_to_dict(cash_flow_row)
+        form = AddCashFlowForm(user_data, user=request.user)
+        return render(
+            request, "change_data/change_cashflow.html", {"form": form}
+        )
+    user_data = request.POST
+    form = AddCashFlowForm(user_data, user=request.user)
+    if form.is_valid():
+        cd = form.cleaned_data
+        CashData(
+            id=pk,
+            created_at=cd.get("created_at")
+            if cd.get("created_at") else datetime.now().date(),
+            status=cd.get("status", None),
+            type=cd.get("type", None),
+            category=cd.get("category", None),
+            subcategory=cd.get("subcategory", None),
+            sum=cd.get("sum", None),
+            user=request.user,
+            comment=cd.get("comment", None)
+        ).save()
+        return redirect(to=reverse("cash_info_page"))
+    context = {"form": form}
+    return render(request, "change_data/change_cashflow.html", context)

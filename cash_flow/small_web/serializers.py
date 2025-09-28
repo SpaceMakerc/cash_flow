@@ -92,7 +92,7 @@ class ShowCashDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = CashData
         fields = (
-            "created_at", "status", "type", "category",
+            "id", "created_at", "status", "type", "category",
             "subcategory", "sum", "comment",
         )
 

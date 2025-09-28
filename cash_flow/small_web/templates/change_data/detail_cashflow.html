@@ -1,0 +1,34 @@
+{% extends 'layout/base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+
+<h4><a href="{% url 'change_cash_flow_page' serializer.data.id %}">Изменить</a></h4>
+<h4><a href="{% url 'delete_cash_flow_page' serializer.data.id %}">Удалить</a></h4>
+
+<table>
+    <caption>Информация по вашим движениям денежных средств</caption>
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{serializer.data.created_at}}</td>
+            <td>{{serializer.data.status}}</td>
+            <td>{{serializer.data.type}}</td>
+            <td>{{serializer.data.category}}</td>
+            <td>{{serializer.data.subcategory}}</td>
+            <td>{{serializer.data.sum}}</td>
+            <td>{{serializer.data.comment}}</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock content %}
