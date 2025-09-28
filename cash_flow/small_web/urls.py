@@ -7,5 +7,8 @@ urlpatterns = [
     path("signup/", views.SignUpAPI.as_view(), name="signup_page"),
     path("signin/", views.SignInAPI.as_view(), name="signin_page"),
     path("logout/", views.LogOutAPI.as_view(), name="logout_page"),
-    path("cash_info/", views.CashDataAPI.as_view(), name="cash_info_page")
+    path("cash_info/", views.CashDataAPI.as_view(), name="cash_info_page"),
+    path("add_cash_flow/", views.add_cash_flow, name="add_cash_flow_page"),
+    path("category/", views.categories, name="category"),
+    path("subcategory/", views.subcategories, name="subcategory")
 ]

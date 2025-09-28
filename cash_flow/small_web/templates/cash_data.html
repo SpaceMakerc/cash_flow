@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<h3>Для изменения или удаления записи - выберите </h3>
+<h3>Для изменения или удаления записи - выберите номер строки</h3>
 <form method="POST">
     {% csrf_token %}
     <select class="form-select" aria-label="select status" id="status_id" name="status">
@@ -32,20 +32,19 @@
     </select>
     {% render_field serializer_choose.created_at_start style=style %}
     {% render_field serializer_choose.created_at_end style=style %}
-<!--    <label for="created_at_start">Выберите начало периода</label> <input type="date" id="created_at_start" name="created_at_start">-->
-<!--    <label for="created_at_end">Выберите окончание периода</label> <input type="date" id="created_at_end" name="created_at_end">-->
 
     <input type="submit" value="Поиск">
 </form>
 
 <nav>
-    <a href="#">Добавить данные по ДДС</a>
+    <a href="{% url 'add_cash_flow_page' %}">Добавить данные по ДДС</a>
     <a href="#">Управление справочниками</a>
 </nav>
 <table>
     <caption>Информация по вашим движениям денежных средств</caption>
     <thead>
         <tr>
+            <th>Номер строки</th>
             <th>Дата</th>
             <th>Статус</th>
             <th>Тип</th>
@@ -58,6 +57,7 @@
     <tbody>
         {% for data in serializer_show.data %}
         <tr>
+            <td>{{forloop.counter}}</td>
             <td>{{data.created_at}}</td>
             <td>{{data.status}}</td>
             <td>{{data.type}}</td>

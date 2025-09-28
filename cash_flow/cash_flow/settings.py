@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "small_web.apps.SmallWebConfig",
     "rest_framework",
     "corsheaders",
-
+    "widget_tweaks"
 ]
 
 MIDDLEWARE = [

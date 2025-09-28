@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.shortcuts import redirect, reverse
+from django.shortcuts import redirect, reverse, render
 from django.db.models import Q
+from django.http.response import HttpResponse
 
 
 from small_web.serializers import (
@@ -19,6 +20,7 @@ from small_web.models import (
     Statuses,
     SubCategories
 )
+from small_web.forms import AddCashFlowForm
 from small_web.utils.utils_validate import CHOSEN_FIELD
 from small_web.utils.utils_create_date_period import create_date_period
 
@@ -170,3 +172,38 @@ class CashDataAPI(APIView):
                 "serializer_choose": serializer_check,
                 "style": self.style
             })
+
+
+def add_cash_flow(request):
+    if request.method == "GET":
+        form = AddCashFlowForm(user=request.user)
+        context = {"form": form}
+        return render(request, "change_data/add_cashflow.html", context)
+    user_data = request.POST
+    form = AddCashFlowForm(user_data, user=request.user)
+    if form.is_valid():
+        cd = form.cleaned_data
+        print(cd, "CD")
+        CashData(
+            created_at=cd.get("created_at", None),
+            status=cd.get("status", None),
+            type=cd.get("type", None),
+            category=cd.get("category", None),
+            subcategory=cd.get("subcategory", None),
+            sum=cd.get("sum", None),
+            user=request.user,
+            comment=cd.get("status", None)
+        ).save()
+        return redirect(to=reverse("cash_info_page"))
+    context = {"form": form}
+    return render(request, "change_data/add_cashflow.html", context)
+
+
+def categories(request):
+    form = AddCashFlowForm(request.GET, user=request.user)
+    return HttpResponse(form["category"])
+
+
+def subcategories(request):
+    form = AddCashFlowForm(request.GET, user=request.user)
+    return HttpResponse(form["subcategory"])
