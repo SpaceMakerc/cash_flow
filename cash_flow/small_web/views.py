@@ -5,13 +5,22 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.shortcuts import redirect, reverse
+from django.db.models import Q
+
 
 from small_web.serializers import (
     SignUpSerializer,
     SignInSerializer,
-    GetCashDataSerializer,
+    ShowCashDataSerializer,
+    ChooseCashDataSerializer
 )
-from small_web.models import CashData
+from small_web.models import (
+    CashData,
+    Statuses,
+    SubCategories
+)
+from small_web.utils.utils_validate import CHOSEN_FIELD
+from small_web.utils.utils_create_date_period import create_date_period
 
 # Create your views here.
 
@@ -92,13 +101,72 @@ class CashDataAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "cash_data.html"
     permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/vertical/'}
 
     def get(self, request):
-        db_info = CashData.objects.select_related(
-            'status', 'type', 'category', 'subcategory'
-        ).only(
-            'created_at', 'status', 'type', 'category',
-            'subcategory', 'sum', 'comment'
-        ).filter(user=request.user.id)
-        serializer = GetCashDataSerializer(db_info, many=True)
-        return Response({"serializer": serializer})
+        user_id = request.user
+        db_info = CashData.objects.filter(user=user_id)
+        common_filter = Q(user=request.user) | Q(user=1)
+        context = {}
+        common_query = SubCategories.objects.select_related(
+            'category', 'category__type'
+        ).filter(Q(category__user=user_id) | Q(category__user=1))
+        statuses_query = Statuses.objects.filter(common_filter)
+        context.update({
+            "common_query": common_query, "statuses_query": statuses_query
+        })
+        serializer_choose = ChooseCashDataSerializer()
+        serializer_show = ShowCashDataSerializer(db_info, many=True)
+        context.update({
+            "serializer_show": serializer_show,
+            "serializer_choose": serializer_choose,
+            "style": self.style
+        })
+        return Response(context)
+
+    def post(self, request):
+        user_data = request.POST
+        serializer_check = ChooseCashDataSerializer(data=user_data)
+        if serializer_check.is_valid():
+            user_id = request.user
+            db_info = CashData.objects.filter(user=user_id)
+            if any(
+                    val != "0" and val != ""
+                    for key, val in user_data.items()
+                    if key in CHOSEN_FIELD
+            ):
+                date_range = create_date_period(
+                    start_date=user_data.get("created_at_start", None),
+                    end_date=user_data.get("created_at_end", None)
+                )
+                db_info = CashData.objects.filter(
+                    Q(status=user_data.get("status", None)) |
+                    Q(type=user_data.get("type", None)) |
+                    Q(category=user_data.get("category", None)) |
+                    Q(subcategory=user_data.get("subcategory", None))
+                    | date_range if date_range else ~Q(created_at_start=None)
+                )
+            common_filter = Q(user=request.user) | Q(user=1)
+            context = {}
+            common_query = SubCategories.objects.select_related(
+                'category', 'category__type'
+            ).filter(Q(category__user=user_id) | Q(category__user=1))
+            statuses_query = Statuses.objects.filter(common_filter)
+            context.update({
+                "common_query": common_query, "statuses_query": statuses_query
+            })
+            serializer_show = ShowCashDataSerializer(db_info, many=True)
+            context.update({
+                "serializer_show": serializer_show,
+                "serializer_choose": serializer_check,
+                "style": self.style
+            })
+            return Response(context)
+        else:
+            db_info = CashData.objects.filter(user=request.user)
+            serializer_show = ShowCashDataSerializer(db_info, many=True)
+            return Response({
+                "serializer_show": serializer_show,
+                "serializer_choose": serializer_check,
+                "style": self.style
+            })

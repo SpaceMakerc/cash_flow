@@ -79,11 +79,48 @@ class SignInSerializer(serializers.ModelSerializer):
         fields = ("username", "password")
 
 
-class GetCashDataSerializer(serializers.Serializer):
-    created_at = serializers.DateField()
-    status = serializers.CharField()
-    type = serializers.CharField()
-    category = serializers.CharField()
-    subcategory = serializers.CharField()
-    sum = serializers.FloatField()
-    comment = serializers.CharField()
+class ShowCashDataSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateField(
+        format="%d.%m.%Y", input_formats=['%d.%m.%Y', 'iso-8601'],
+        style={"placeholder": "Введите дату в формате дд.мм.гггг"}
+    )
+    status = serializers.CharField(source="status.name")
+    type = serializers.CharField(source="type.name")
+    category = serializers.CharField(source="category.name")
+    subcategory = serializers.CharField(source="subcategory.name")
+
+    class Meta:
+        model = CashData
+        fields = (
+            "created_at", "status", "type", "category",
+            "subcategory", "sum", "comment",
+        )
+
+
+class ChooseCashDataSerializer(serializers.ModelSerializer):
+    created_at_start = serializers.DateField(
+        format="%d.%m.%Y", input_formats=['%d.%m.%Y', 'iso-8601'],
+        style={"placeholder": "Введите дату в формате дд.мм.гггг"},
+        allow_null=True,
+        label="Выберите начало периода",
+        error_messages={"invalid": "Дата должна быть формата дд.мм.гггг"}
+    )
+    created_at_end = serializers.DateField(
+        format="%d.%m.%Y", input_formats=['%d.%m.%Y', 'iso-8601'],
+        style={"placeholder": "Введите дату в формате дд.мм.гггг"},
+        allow_null=True,
+        label="Выберите окончание периода",
+        error_messages={"invalid": "Дата должна быть формата дд.мм.гггг"}
+    )
+    status = serializers.CharField(allow_null=True, required=False)
+    type = serializers.CharField(allow_null=True, required=False)
+    category = serializers.CharField(allow_null=True, required=False)
+    subcategory = serializers.CharField(allow_null=True, required=False)
+    sum = serializers.FloatField(allow_null=True, required=False)
+
+    class Meta:
+        model = CashData
+        fields = (
+            "status", "type", "category", "subcategory",
+            "sum", "comment", "created_at_start", "created_at_end"
+        )
