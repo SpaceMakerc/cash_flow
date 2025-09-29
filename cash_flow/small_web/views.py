@@ -18,15 +18,23 @@ from small_web.serializers import (
     ShowCashDataSerializer,
     ChooseCashDataSerializer,
     StatusSerializer,
+    TypeSerializer
 )
 from small_web.models import (
     CashData,
     Statuses,
-    SubCategories
+    SubCategories,
+    Types
 )
 from small_web.forms import AddCashFlowForm
 from small_web.utils.utils_validate import CHOSEN_FIELD
-from small_web.utils.utils_create_date_period import create_date_period
+from small_web.utils.utils_create_query_cash_flow import (
+    create_date_period,
+    create_category_filter,
+    create_status_filter,
+    create_type_filter,
+    create_subcategory_filter
+)
 
 # Create your views here.
 
@@ -105,7 +113,7 @@ class LogOutAPI(APIView):
 
 class CashDataAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = "cash_data.html"
+    template_name = "change_cash_flow_data/cash_data.html"
     permission_classes = [IsAuthenticated]
     style = {'template_pack': 'rest_framework/vertical/'}
 
@@ -141,17 +149,15 @@ class CashDataAPI(APIView):
                     for key, val in user_data.items()
                     if key in CHOSEN_FIELD
             ):
-                date_range = create_date_period(
-                    start_date=user_data.get("created_at_start", None),
-                    end_date=user_data.get("created_at_end", None)
-                )
                 db_info = CashData.objects.filter(
-                    Q(user=user_id) & Q(
-                        Q(status=user_data.get("status")) |
-                        Q(type=user_data.get("type")) |
-                        Q(category=user_data.get("category")) |
-                        Q(subcategory=user_data.get("subcategory")) |
-                        date_range
+                    Q(user=user_id) &
+                    create_status_filter(user_data.get("status")) &
+                    create_type_filter(user_data.get("type")) &
+                    create_category_filter(user_data.get("category")) &
+                    create_subcategory_filter(user_data.get("subcategory")) &
+                    create_date_period(
+                        start_date=user_data.get("created_at_start", None),
+                        end_date=user_data.get("created_at_end", None)
                     )
                 )
             common_filter = Q(user=request.user) | Q(user=1)
@@ -276,7 +282,7 @@ def change_cash_flow(request, pk):
 
 class StatusesByUserAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = "statuses_data.html"
+    template_name = "change_statuses_data/statuses_data.html"
     permission_classes = [IsAuthenticated]
     style = {'template_pack': 'rest_framework/horizontal/'}
 
@@ -341,9 +347,78 @@ class DeleteStatusAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        try:
-            status_row = get_object_or_404(Statuses, pk=pk)
-            Statuses.delete(status_row)
-            return redirect(to=reverse("statuses_info_page"))
-        except Exception:
-            return redirect(to=reverse("statuses_info_page"))
+        status_row = get_object_or_404(Statuses, pk=pk)
+        Statuses.delete(status_row)
+        return redirect(to=reverse("statuses_info_page"))
+
+
+class TypeByUserAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_type_data/type_data.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        user_id = request.user
+        common_filter = Q(user=user_id) | Q(user=1)
+        db_info = Types.objects.filter(common_filter)
+        serializer = TypeSerializer(db_info, many=True)
+        context = {"serializer": serializer, "style": self.style}
+        return Response(context)
+
+
+class AddTypeAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_type_data/add_type.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        serializer = TypeSerializer()
+        return Response({"serializer": serializer, "style": self.style})
+
+    def post(self, request):
+        user_data = {
+            "user": request.user.id, "name": request.POST.get("name", None)
+        }
+
+        serializer = TypeSerializer(data=user_data)
+        if serializer.is_valid():
+            serializer.save()
+            return redirect(to=reverse("type_info_page"))
+        return Response({"serializer": serializer, "style": self.style})
+
+
+class ChangeTypeAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_type_data/change_type.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request, pk):
+        type_row = get_object_or_404(Types, pk=pk)
+        serializer = TypeSerializer(type_row)
+        return Response({"serializer": serializer, "style": self.style})
+
+    def post(self, request, pk):
+        user_data = {
+            "user": request.user.id, "name": request.POST.get("name", None)
+        }
+        serializer = TypeSerializer(data=user_data)
+        if serializer.is_valid():
+            Types(
+                id=pk,
+                user=serializer.validated_data.get("user"),
+                name=serializer.validated_data.get("name")
+            ).save()
+            return redirect(to=reverse("type_info_page"))
+        return Response({"serializer": serializer, "style": self.style})
+
+
+class DeleteTypeAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        type_row = get_object_or_404(Types, pk=pk)
+        Statuses.delete(type_row)
+        return redirect(to=reverse("type_info_page"))

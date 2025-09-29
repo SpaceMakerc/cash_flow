@@ -4,9 +4,9 @@
 {% block content %}
 
 <h3>Для изменения или удаления записи - выберите номер строки</h3>
-<h3><a href="{% url 'add_status_page' %}">Добавить Статус</a></h3>
+<h3><a href="{% url 'add_type_page' %}">Добавить Тип</a></h3>
 <table>
-    <caption>Информация по вашим статусам</caption>
+    <caption>Информация по вашим типам</caption>
     <thead>
         <tr>
             <th>Номер строки</th>
@@ -18,10 +18,10 @@
     <tbody>
         {% for data in serializer.data %}
         <tr>
-            <td><a href="#">{{forloop.counter}}</a></td>
+            <td>{{forloop.counter}}</td>
             <td>{{data.name}}</td>
-            <td><a href="{% url 'change_status_page' data.id %}"><input type="button" value="V"></a></td>
-            <td><a href="{% url 'delete_status_page' data.id %}"><input type="button" value="V"></a></td>
+            <td><a href="{% url 'change_type_page' data.id %}"><input type="button" value="V"></a></td>
+            <td><a href="{% url 'delete_type_page' data.id %}"><input type="button" value="V"></a></td>
         </tr>
         {% endfor %}
     </tbody>

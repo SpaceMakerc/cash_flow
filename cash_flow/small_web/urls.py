@@ -29,11 +29,21 @@ urlpatterns = [
     ),
     path("add_status/", views.AddStatusAPI.as_view(), name="add_status_page"),
     path(
-        "change_status/<int:pk>", views.ChangeStatusAPI.as_view(),
+        "change_status/<int:pk>/", views.ChangeStatusAPI.as_view(),
         name="change_status_page"
     ),
     path(
-        "delete_status/<int:pk>", views.DeleteStatusAPI.as_view(),
+        "delete_status/<int:pk>/", views.DeleteStatusAPI.as_view(),
         name="delete_status_page"
+    ),
+    path("type_info/", views.TypeByUserAPI.as_view(), name="type_info_page"),
+    path("add_type/", views.AddTypeAPI.as_view(), name="add_type_page"),
+    path(
+        "change_type/<int:pk>/", views.ChangeTypeAPI.as_view(),
+        name="change_type_page"
+    ),
+    path(
+        "delete_type/<int:pk>/", views.DeleteTypeAPI.as_view(),
+        name="delete_type_page"
     )
 ]
