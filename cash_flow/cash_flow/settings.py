@@ -87,7 +87,8 @@ DATABASES = {
         'NAME': os.getenv('DATABASE_TEST_NAME'),
         'USER': os.getenv('DATABASE_TEST_USER'),
         'PASSWORD': os.getenv('DATABASE_TEST_PASSWORD'),
-        'HOST': os.getenv('DATABASE_TEST_HOST'),
+        'HOST': "pgdb",  #  Наименование контейнера для базы данных в Docker Compose
+        # ИЛИ os.getenv('DATABASE_HOST') для локальной бд с добавление модуля --network host (чтобы контейнер увидел локальную дб)
         'PORT': os.getenv('DATABASE_TEST_PORT'),
     }
 }
