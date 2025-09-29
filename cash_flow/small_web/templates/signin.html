@@ -1,0 +1,16 @@
+{% extends 'layout/base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+<h1>Вход в систему</h1>
+{% if not_found %}
+<h3>Пользователь с такими данными не найден</h3>
+{% endif %}
+<form method="post">
+  {% csrf_token %}
+  {% render_field serializer.username style=style %}
+  {% render_field serializer.password style=style %}
+  <input type="submit" value="Войти">
+</form>
+
+{% endblock content %}

@@ -1,0 +1,76 @@
+{% extends 'layout/base.html' %}
+{% load rest_framework %}
+
+{% block content %}
+
+<h3>Для изменения или удаления записи - выберите номер строки</h3>
+<form method="POST">
+    {% csrf_token %}
+    <select class="form-select" aria-label="select status" id="status_id" name="status">
+        <option value="0" selected>Выберите статус</option>
+            {% for row in statuses_query %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endfor %}
+    </select>
+    <select class="form-select" aria-label="select type" id="type_id" name="type">
+        <option value="0" selected>Выберите тип</option>
+            {% for row in common_query %}
+                <option value="{{ row.category.type.id }}">{{ row.category.type.name }}</option>
+            {% endfor %}
+    </select>
+    <select class="form-select" aria-label="select category" id="category_id" name="category">
+        <option value="0" selected>Выберите категорию</option>
+            {% for row in common_query %}
+                <option value="{{ row.category.id }}">{{ row.category.name }}</option>
+            {% endfor %}
+    </select>
+    <select class="form-select" aria-label="select subcategory" id="subcategory_id" name="subcategory">
+        <option value="0" selected>Выберите подкатегорию</option>
+            {% for row in common_query %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endfor %}
+    </select>
+    {% render_field serializer_choose.created_at_start style=style %}
+    {% render_field serializer_choose.created_at_end style=style %}
+
+    <input type="submit" value="Поиск">
+</form>
+
+<nav>
+    <a href="{% url 'add_cash_flow_page' %}">Добавить данные по ДДС</a>
+    <a href="{% url 'statuses_info_page' %}">Справочник Статусы</a>
+    <a href="{% url 'type_info_page' %}">Справочник Типы</a>
+    <a href="{% url 'category_info_page' %}">Справочник Категории</a>
+    <a href="{% url 'subcategory_info_page' %}">Справочник Подкатегорий</a>
+</nav>
+<table>
+    <caption>Информация по вашим движениям денежных средств</caption>
+    <thead>
+        <tr>
+            <th>Номер строки</th>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in serializer_show.data %}
+        <tr>
+            <td><a href="{% url 'cash_flow_detail_page' data.id %}">{{forloop.counter}}</a></td>
+            <td>{{data.created_at}}</td>
+            <td>{{data.status}}</td>
+            <td>{{data.type}}</td>
+            <td>{{data.category}}</td>
+            <td>{{data.subcategory}}</td>
+            <td>{{data.sum}}</td>
+            <td>{{data.comment}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock content %}

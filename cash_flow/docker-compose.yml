@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  pgdb:
+    image: postgres
+    container_name: pgdb
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - custom-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  web:
+    container_name: web
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    depends_on:
+      - pgdb
+
+volumes:
+  custom-data:
