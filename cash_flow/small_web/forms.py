@@ -35,7 +35,6 @@ class AddCashFlowForm(DynamicFormMixin, forms.Form):
         return SubCategories.objects.filter(category=category)
 
     created_at = forms.DateField(
-        input_formats=['%d.%m.%Y', 'iso-8601'],
         widget=forms.DateInput(attrs={
             "type": "date", "placeholder": "Введите дату в формате дд.мм.гггг"
         }),
@@ -125,7 +124,8 @@ class AddCategoryForm(forms.ModelForm):
     def clean(self):
         errors = {}
         super().clean()
-        if self.cleaned_data.get("name", None) is None:
+        print(self.cleaned_data)
+        if self.cleaned_data.get("name") == "":
             errors["name"] = "Поле наименование Категории не может быть пустым"
         if self.cleaned_data.get("type", None) is None:
             errors["type"] = "Выберите поле Тип для категории"

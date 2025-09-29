@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -114,7 +115,7 @@ class CashData(models.Model):
     Таблица с общей информацией о движении денежных средств
     """
     created_at = models.DateField(
-        auto_now_add=True, verbose_name="Дата создания записи", null=False
+        verbose_name="Дата создания записи", null=False, default=now()
     )
     status = models.ForeignKey(
         "Statuses", related_name="cash_statuses", on_delete=models.CASCADE
