@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from small_web.models import CustomUsers, CashData, Statuses, Types
+from small_web.models import CustomUsers, CashData, Statuses, Types, Categories
 from small_web.utils.utils_validate import (
     username_validation_on_creating,
     email_validation_on_creating,
@@ -131,7 +131,7 @@ class StatusSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         allow_null=False, required=True,
         error_messages={"blank": "Поле Наименование не может быть пустым"},
-        label="Наименование"
+        label="Наименование статуса"
     )
 
     class Meta:
@@ -144,9 +144,25 @@ class TypeSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         allow_null=False, required=True,
         error_messages={"blank": "Поле Наименование не может быть пустым"},
-        label="Наименование"
+        label="Наименование типа"
     )
 
     class Meta:
         model = Types
         fields = ("id", "name", "user")
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        allow_null=False, required=True,
+        error_messages={"blank": "Поле Наименование не может быть пустым"},
+        label="Наименование категории"
+    )
+    type = serializers.PrimaryKeyRelatedField(
+        queryset=Types.objects.all(),
+        source="type.name"
+    )
+
+    class Meta:
+        model = Categories
+        fields = ("id", "name", "user", "type")

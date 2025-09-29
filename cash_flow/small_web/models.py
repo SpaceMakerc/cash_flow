@@ -129,7 +129,9 @@ class CashData(models.Model):
         "SubCategories", related_name="cash_subcategories",
         on_delete=models.CASCADE
     )
-    sum = models.FloatField(null=False, verbose_name="Сумма")
+    sum = models.DecimalField(
+        null=False, verbose_name="Сумма", max_digits=10, decimal_places=3
+    )
     user = models.ForeignKey(
         "CustomUsers", related_name="user_cash_data", on_delete=models.CASCADE
     )

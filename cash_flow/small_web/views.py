@@ -18,15 +18,17 @@ from small_web.serializers import (
     ShowCashDataSerializer,
     ChooseCashDataSerializer,
     StatusSerializer,
-    TypeSerializer
+    TypeSerializer,
+    CategorySerializer,
 )
 from small_web.models import (
     CashData,
     Statuses,
     SubCategories,
-    Types
+    Types,
+    Categories
 )
-from small_web.forms import AddCashFlowForm
+from small_web.forms import AddCashFlowForm, AddCategoryForm
 from small_web.utils.utils_validate import CHOSEN_FIELD
 from small_web.utils.utils_create_query_cash_flow import (
     create_date_period,
@@ -191,7 +193,9 @@ def add_cash_flow(request):
     if request.method == "GET":
         form = AddCashFlowForm(user=request.user)
         context = {"form": form}
-        return render(request, "change_cash_flow_data/add_cashflow.html", context)
+        return render(
+            request, "change_cash_flow_data/add_cashflow.html", context
+        )
     user_data = request.POST
     form = AddCashFlowForm(user_data, user=request.user)
     if form.is_valid():
@@ -422,3 +426,78 @@ class DeleteTypeAPI(APIView):
         type_row = get_object_or_404(Types, pk=pk)
         Statuses.delete(type_row)
         return redirect(to=reverse("type_info_page"))
+
+
+class CategoryByUserAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_category_data/category_data.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        user_id = request.user
+        common_filter = Q(user=user_id) | Q(user=1)
+        db_info = Categories.objects.prefetch_related(
+            "type").filter(common_filter)
+        serializer = CategorySerializer(db_info, many=True)
+        context = {"serializer": serializer, "style": self.style}
+        return Response(context)
+
+
+@login_required
+def add_category(request):
+    if request.method == "GET":
+        form = AddCategoryForm(user=request.user)
+        context = {"form": form}
+        return render(
+            request, "change_category_data/add_category.html", context
+        )
+    user_data = request.POST
+    form = AddCategoryForm(user_data, user=request.user)
+    if form.is_valid():
+        Categories(
+            name=form.cleaned_data.get("name"),
+            type=form.cleaned_data.get("type"),
+            user=request.user
+        ).save()
+        return redirect(to=reverse("category_info_page"))
+    context = {"form": form}
+    return render(
+        request, "change_category_data/add_category.html", context
+    )
+
+
+@login_required
+def change_category(request, pk):
+    if request.method == "GET":
+        category_row = get_object_or_404(Categories, pk=pk)
+        user_data = model_to_dict(category_row)
+        form = AddCategoryForm(user_data, user=request.user)
+        return render(
+            request, "change_category_data/change_category.html",
+            {"form": form}
+        )
+    user_data = request.POST
+    form = AddCategoryForm(user_data, user=request.user)
+    if form.is_valid():
+        cd = form.cleaned_data
+        Categories(
+            id=pk,
+            name=cd.get("name"),
+            type=cd.get("type"),
+            user=request.user
+        ).save()
+        return redirect(to=reverse("category_info_page"))
+    context = {"form": form}
+    return render(
+        request, "change_category_data/change_category.html", context
+    )
+
+
+class DeleteCategory(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        category_row = get_object_or_404(Categories, pk=pk)
+        Categories.delete(category_row)
+        return redirect(to=reverse("category_info_page"))

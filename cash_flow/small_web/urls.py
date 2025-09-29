@@ -45,5 +45,18 @@ urlpatterns = [
     path(
         "delete_type/<int:pk>/", views.DeleteTypeAPI.as_view(),
         name="delete_type_page"
+    ),
+    path(
+        "category_info/", views.CategoryByUserAPI.as_view(),
+        name="category_info_page"
+    ),
+    path("add_category/", views.add_category, name="add_category_page"),
+    path(
+        "change_category/<int:pk>/", views.change_category,
+        name="change_category_page"
+    ),
+    path(
+        "delete_category/<int:pk>/", views.DeleteCategory.as_view(),
+        name="delete_category_page"
     )
 ]
