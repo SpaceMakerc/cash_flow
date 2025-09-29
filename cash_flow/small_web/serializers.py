@@ -166,3 +166,19 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Categories
         fields = ("id", "name", "user", "type")
+
+
+class SubcategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        allow_null=False, required=True,
+        error_messages={"blank": "Поле Наименование не может быть пустым"},
+        label="Наименование категории"
+    )
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Types.objects.all(),
+        source="category.name"
+    )
+
+    class Meta:
+        model = Categories
+        fields = ("id", "name", "category")

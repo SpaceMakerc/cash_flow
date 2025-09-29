@@ -20,6 +20,7 @@ from small_web.serializers import (
     StatusSerializer,
     TypeSerializer,
     CategorySerializer,
+    SubcategorySerializer
 )
 from small_web.models import (
     CashData,
@@ -28,7 +29,7 @@ from small_web.models import (
     Types,
     Categories
 )
-from small_web.forms import AddCashFlowForm, AddCategoryForm
+from small_web.forms import AddCashFlowForm, AddCategoryForm, AddSubcategoryForm
 from small_web.utils.utils_validate import CHOSEN_FIELD
 from small_web.utils.utils_create_query_cash_flow import (
     create_date_period,
@@ -501,3 +502,76 @@ class DeleteCategory(APIView):
         category_row = get_object_or_404(Categories, pk=pk)
         Categories.delete(category_row)
         return redirect(to=reverse("category_info_page"))
+
+
+class SubcategoryByUserAPI(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "change_subcategory_data/subcategory_data.html"
+    permission_classes = [IsAuthenticated]
+    style = {'template_pack': 'rest_framework/horizontal/'}
+
+    def get(self, request):
+        user_id = request.user
+        common_filter = Q(category__user=user_id) | Q(category__user=1)
+        db_info = SubCategories.objects.prefetch_related(
+            "category").filter(common_filter)
+        serializer = SubcategorySerializer(db_info, many=True)
+        context = {"serializer": serializer, "style": self.style}
+        return Response(context)
+
+
+@login_required
+def add_subcategory(request):
+    if request.method == "GET":
+        form = AddSubcategoryForm(user=request.user)
+        context = {"form": form}
+        return render(
+            request, "change_subcategory_data/add_subcategory.html", context
+        )
+    user_data = request.POST
+    form = AddSubcategoryForm(user_data, user=request.user)
+    if form.is_valid():
+        SubCategories(
+            name=form.cleaned_data.get("name"),
+            category=form.cleaned_data.get("category"),
+        ).save()
+        return redirect(to=reverse("subcategory_info_page"))
+    context = {"form": form}
+    return render(
+        request, "change_subcategory_data/add_subcategory.html", context
+    )
+
+
+@login_required
+def change_subcategory(request, pk):
+    if request.method == "GET":
+        subcategory_row = get_object_or_404(SubCategories, pk=pk)
+        user_data = model_to_dict(subcategory_row)
+        form = AddSubcategoryForm(user_data, user=request.user)
+        return render(
+            request, "change_subcategory_data/change_subcategory.html",
+            {"form": form}
+        )
+    user_data = request.POST
+    form = AddSubcategoryForm(user_data, user=request.user)
+    if form.is_valid():
+        cd = form.cleaned_data
+        SubCategories(
+            id=pk,
+            name=cd.get("name"),
+            category=cd.get("category"),
+        ).save()
+        return redirect(to=reverse("subcategory_info_page"))
+    context = {"form": form}
+    return render(
+        request, "change_subcategory_data/change_subcategory.html", context
+    )
+
+
+class DeleteSubcategory(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        subcategory_row = get_object_or_404(SubCategories, pk=pk)
+        SubCategories.delete(subcategory_row)
+        return redirect(to=reverse("subcategory_info_page"))

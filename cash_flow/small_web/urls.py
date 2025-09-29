@@ -58,5 +58,20 @@ urlpatterns = [
     path(
         "delete_category/<int:pk>/", views.DeleteCategory.as_view(),
         name="delete_category_page"
+    ),
+    path(
+        "subcategory_info/", views.SubcategoryByUserAPI.as_view(),
+        name="subcategory_info_page"
+    ),
+    path(
+        "add_subcategory/", views.add_subcategory, name="add_subcategory_page"
+    ),
+    path(
+        "change_subcategory/<int:pk>/", views.change_subcategory,
+        name="change_subcategory_page"
+    ),
+    path(
+        "delete_subcategory/<int:pk>/", views.DeleteSubcategory.as_view(),
+        name="delete_subcategory_page"
     )
 ]

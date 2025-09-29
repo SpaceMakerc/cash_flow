@@ -85,7 +85,6 @@ class AddCashFlowForm(DynamicFormMixin, forms.Form):
     def clean(self):
         errors = {}
         super().clean()
-        print(self.cleaned_data, '!!!!!!!!!')
         if self.cleaned_data.get("status", None) is None:
             errors["status"] = "Поле Статус не может быть пусты"
         if self.cleaned_data.get("type", None) is None:
@@ -126,13 +125,52 @@ class AddCategoryForm(forms.ModelForm):
     def clean(self):
         errors = {}
         super().clean()
-        if not self.cleaned_data.get("name", None):
-            errors["name"] = "Поле Наименование категории не может быть пусты"
+        if self.cleaned_data.get("name", None) is None:
+            errors["name"] = "Поле наименование Категории не может быть пустым"
         if self.cleaned_data.get("type", None) is None:
-            errors["type"] = "Выберите поле тип для категории"
+            errors["type"] = "Выберите поле Тип для категории"
         if errors:
             raise ValidationError(errors)
 
     class Meta:
         model = Categories
         fields = ("name", 'type')
+
+
+class AddSubcategoryForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        self.common_filter = Q(user=self.user) | Q(user=1)
+        super(AddSubcategoryForm, self).__init__(*args, **kwargs)
+        self.fields["category"].queryset = Categories.objects.filter(
+            self.common_filter)
+        self.fields["category"].initial = Categories.objects.filter(
+            self.common_filter).first()
+
+    name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "type": "textarea", "placeholder": "Введите наименование"
+        }),
+        label="Наименование подкатегории",
+        required=False
+    )
+    category = forms.ModelChoiceField(
+        queryset=Categories.objects.none(),
+        label="Ктегория подкатегории",
+        required=False
+    )
+
+    def clean(self):
+        errors = {}
+        super().clean()
+        if self.cleaned_data.get("name") == "":
+            errors["name"] = "Поле наименование Подкатегории не может быть " \
+                             "пустым"
+        if self.cleaned_data.get("category", None) is None:
+            errors["category"] = "Выберите поле Категории для подкатегории"
+        if errors:
+            raise ValidationError(errors)
+
+    class Meta:
+        model = SubCategories
+        fields = ("name", 'category')
