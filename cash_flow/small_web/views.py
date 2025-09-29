@@ -10,7 +10,7 @@ from django.http.response import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 
-from datetime import datetime
+from datetime import datetime, date
 
 from small_web.serializers import (
     SignUpSerializer,
@@ -202,7 +202,8 @@ def add_cash_flow(request):
     if form.is_valid():
         cd = form.cleaned_data
         CashData(
-            created_at=cd.get("created_at", None),
+            created_at=cd.get("created_at", None)
+            if cd.get("created_at", None) else datetime.now().date(),
             status=cd.get("status", None),
             type=cd.get("type", None),
             category=cd.get("category", None),
