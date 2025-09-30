@@ -117,12 +117,15 @@ session_id, который хранится на строне клиента к 
 
 ### Инструкция по запуску:
 
-1 - Спулить проект
+![project_tree](https://github.com/user-attachments/assets/a02a23a7-3e4c-4e32-bbfd-793b5f1fdca1)
+
+
+1 - Склонировать проект
 https://github.com/SpaceMakerc/cash_flow.git
 
 2 - Для запуска приложения первоначально нужно создать файл .env в корне проекта, в нём указать следующие данные:
 
-secret_key=ключ к приложению
+SECRET_KEY=ключ к приложению в Django
 
 DATABASE_NAME=наименование базы
 
